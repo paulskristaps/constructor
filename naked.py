@@ -19,25 +19,29 @@ dt = datetime.now()
 request_date = str(dt.year) + "-" + str(dt.month).zfill(2) + "-" + str(dt.day).zfill(2)  
 print("Generated today's date: " + str(request_date))
 
-
+# Izveido savienojumu ar majaslapu un pievieno vajadzigo informaciju
 print("Request url: " + str(nasa_api_url + "rest/v1/feed?start_date=" + request_date + "&end_date=" + request_date + "&api_key=" + nasa_api_key))
 r = requests.get(nasa_api_url + "rest/v1/feed?start_date=" + request_date + "&end_date=" + request_date + "&api_key=" + nasa_api_key)
 
+# izprintē savienojuma statusa kodu, headerus un saturu, pēctam kad savienojums izveidots
 print("Response status code: " + str(r.status_code))
 print("Response headers: " + str(r.headers))
 print("Response content: " + str(r.text))
 
+# Ja savienojums veiksmīgs, tad turpināt
 if r.status_code == 200:
-
+	# saglabā kā json failu iegūto tekstu no savienojuma
 	json_data = json.loads(r.text)
-
+	# jauni saraksti ar drošiem asteroīdiem un bistamiem
 	ast_safe = []
 	ast_hazardous = []
-
+	#ja element_count pastāv mājaslapas kodā
 	if 'element_count' in json_data:
+		# iegūst elementu skaitu un izprintē
 		ast_count = int(json_data['element_count'])
 		print("Asteroid count today: " + str(ast_count))
 
+		#ja asteroidi vairak par 0, tad noskaidrot vai konkrētas informācijas vērtības par katru no šiem objektiem pastāv un saglabāt šīs vērtības, ja nepastāv tad iedot  negatīvas vērtības
 		if ast_count > 0:
 			for val in json_data['near_earth_objects'][request_date]:
 				if 'name' and 'nasa_jpl_url' and 'estimated_diameter' and 'is_potentially_hazardous_asteroid' and 'close_approach_data' in val:
@@ -55,6 +59,9 @@ if r.status_code == 200:
 						tmp_ast_diam_max = -1
 
 					tmp_ast_hazardous = val['is_potentially_hazardous_asteroid']
+		
+					# tas pats, kas iepriekšējā daļā, ja dati pastāv, tad noapaļot tos un saglabāt, ja nē tad iedot negatīvu vērtību. saglabā asteroīda ātrumu, distanci, datus par tuvošanos.
+					# Beigās izprintē asteroīda nosaukumu un pārējo informāciju
 
 					if len(val['close_approach_data']) > 0:
 						if 'epoch_date_close_approach' and 'relative_velocity' and 'miss_distance' in val['close_approach_data'][0]:
@@ -97,8 +104,9 @@ if r.status_code == 200:
 		else:
 			print("No asteroids are going to hit earth today")
 
+	#izprintē skaitu cik ir bīstami asteroīdi un cik ir droši
 	print("Hazardous asteorids: " + str(len(ast_hazardous)) + " | Safe asteroids: " + str(len(ast_safe)))
-
+	# ja ir vairāk par 0 bīstamiem astero;idiem, tad izprintē katra bīstamā asteroīda info
 	if len(ast_hazardous) > 0:
 
 		ast_hazardous.sort(key = lambda x: x[4], reverse=False)
@@ -112,5 +120,8 @@ if r.status_code == 200:
 	else:
 		print("No asteroids close passing earth today")
 
+
+# ja savienojums neveiksmīgs, printēt statusa kodu un error ziņu
 else:
 	print("Unable to get response from API. Response code: " + str(r.status_code) + " | content: " + str(r.text))
+ 

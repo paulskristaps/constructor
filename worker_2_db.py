@@ -81,7 +81,7 @@ def sort_ast_by_pass_dist(ast_arr):
 
 def sort_ast_by_time(ast_arr):
 	ast_hazardous.sort(key = lambda x: x[4], reverse=False)
-	return ast_tmp_arr
+	return ast_hazardous
 
 if __name__ == "__main__":
 
